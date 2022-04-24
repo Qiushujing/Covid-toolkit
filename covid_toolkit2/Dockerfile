@@ -15,22 +15,6 @@ WORKDIR /usr/local
 RUN set -ex
 
 RUN apt-get update && \
-    apt-get clean && \
-    g++ --version && \
-    cd /usr/local && \
-    unzip ${STAR_VERSION}.zip && \
-    cp STAR /usr/local/bin && \
-    cd /usr/local && \
-    'rm' -rf STAR-${STAR_VERSION}
-ENV PATH /usr/local/bin:${PATH}
-
-#install hisat2
-#install STAR
-ENV STAR_VERSION 2.7.10a
-WORKDIR /usr/local
-RUN set -ex
-
-RUN apt-get update && \
     apt-get install -y --no-install-recommends gcc g++ make  wget zlib1g-dev unzip && \
     apt-get clean && \
     g++ --version && \
@@ -43,6 +27,32 @@ RUN apt-get update && \
     cd /usr/local && \
     'rm' -rf STAR-${STAR_VERSION}
 ENV PATH /usr/local/bin:${PATH}
+
+#install hisat2
+WORKDIR /usr/local
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Shanghai
+
+ENV HISAT2_VERSION 2.2.1
+RUN apt-get update -y && \
+    apt-get install -y \
+    build-essential \
+    libnss-sss  \
+    vim \
+    wget \
+    libpthread-stubs0-dev \
+    default-jdk \
+    python3 \
+    python
+RUN apt-get clean
+RUN wget https://github.com/DaehwanKimLab/hisat2/archive/refs/tags/v${HISAT2_VERSION}.tar.gz
+RUN tar -xvzf v${HISAT2_VERSION}.tar.gz
+WORKDIR /usr/local/hisat2-${HISAT2_VERSION}
+RUN make
+RUN ln -s /usr/local/hisat2-${hisat2_version}/hisat2 /usr/local/hisat2
+ENV PATH /usr/local/hisat2-${HISAT2_VERSION}/:${PATH}
+ENV LD_LIBRARY_PATH "/usr/local/lib:${LD_LIBRARY_PATH}"
+
 RUN echo "export PATH=$PATH" > /etc/environment
 RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH" > /etc/environment
 
